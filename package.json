@@ -1,0 +1,27 @@
+{
+  "name": "files",
+  "version": "1.0.0",
+  "description": "Connects your Tickora application to Claude LLM via the Model Context Protocol.",
+  "main": "mcp-server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sivakaami052001/tickora-mcp-project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Sivakaami052001/tickora-mcp-project/issues"
+  },
+  "homepage": "https://github.com/Sivakaami052001/tickora-mcp-project#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "node-fetch": "^3.3.2"
+  }
+}

@@ -1,78 +1,210 @@
-# Tickora × Claude MCP Layer
+# Full Documentation: Tickora × Claude MCP Layer
 
-Connects your Tickora application to Claude LLM via the Model Context Protocol.
+## Project Overview
 
----
+This project implements a **Model Context Protocol (MCP) layer** that connects the **Tickora CRM application** to **Claude AI** (Anthropic's language model). It provides two interfaces:
 
-## Files
+1. **MCP Server** (`mcp-server.js`) - For integration with Claude Desktop
+2. **Web Chat UI** (`index.html` + `app.js`) - Browser-based interface for direct interaction
 
-| File | Purpose |
-|---|---|
-| `mcp-server.js` | MCP server (Node.js, stdio) — for Claude Desktop |
-| `index.html` | Web chat UI — open in browser, works directly |
-| `.env.example` | Copy this to `.env` and fill in your credentials |
-| `claude_desktop_config.json` | Register the MCP server in Claude Desktop |
+The system allows Claude to access real-time data from Tickora CRM (people, companies, deals, tasks, tickets, etc.) and answer questions about your CRM data using natural language.
 
----
+## Project Structure
 
-## Quick Start — Web UI (Easiest)
-
-1. Open `index.html` in your browser
-2. Fill in the sidebar:
-   - Tickora URL: `https://www.web.tickora.co.in`
-   - Your new username & password
-   - Your Anthropic API key (get from https://console.anthropic.com)
-3. Click **Connect**
-4. Ask Claude anything — e.g. *"Show all people"*, *"List open deals"*
-
----
-
-## Setup — MCP Server (Claude Desktop)
-
-### 1. Install dependencies
-```bash
-cd tickora-mcp
-npm install
+```
+tickora-mcp-project/
+├── mcp-server.js          # MCP server for Claude Desktop
+├── app.js                 # Express server for web UI backend
+├── index.html             # Web chat interface (frontend)
+├── package.json           # Project dependencies and metadata
+├── README.md              # Basic documentation
+├── .env.example           # Environment variables template
+└── claude_desktop_config.json  # Claude Desktop configuration
 ```
 
-### 2. Create your .env file
-```bash
-cp .env.example .env
-# Then edit .env with your actual credentials
+## Dependencies
+
+Based on `package.json`:
+
+- **@modelcontextprotocol/sdk**: MCP protocol implementation
+- **dotenv**: Environment variable management
+- **express**: Web server framework
+- **node-fetch**: HTTP client for API calls
+
+## Environment Configuration
+
+Create a `.env` file from `.env.example` with:
+
+```env
+TICKORA_BASE_URL=https://www.web.tickora.co.in
+TICKORA_USERNAME=your_username
+TICKORA_PASSWORD=your_password
 ```
 
-### 3. Register with Claude Desktop
+## MCP Server (`mcp-server.js`)
 
-Edit `claude_desktop_config.json` — replace the path and credentials, then copy it to:
+### Purpose
+The MCP server enables Claude Desktop to communicate with Tickora CRM through the Model Context Protocol.
 
-- **Mac**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+### Key Components
 
-### 4. Restart Claude Desktop
+#### Authentication
+- Supports both JSON-based and form-based login
+- Handles session cookies and Bearer tokens
+- Automatic token refresh on 401 errors
 
-The Tickora tools will appear automatically.
+#### Available Tools
+The server exposes the following MCP tools:
 
----
+- `tickora_login` - Authenticate with Tickora
+- `tickora_get_people` - Fetch all people
+- `tickora_get_companies` - Fetch all companies
+- `tickora_get_contacts` - Fetch all contacts
+- `tickora_get_leads` - Fetch all leads
+- `tickora_get_deals` - Fetch all deals
+- `tickora_get_tasks` - Fetch all tasks
+- `tickora_get_tickets` - Fetch all tickets
+- `tickora_get_notes` - Fetch all notes
+- `tickora_get_activities` - Fetch all activities
+- `tickora_get_users` - Fetch all users
+- `tickora_get_pipelines` - Fetch all pipelines
+- `tickora_get_tags` - Fetch all tags
+- `tickora_fetch_all` - Fetch data from ALL endpoints simultaneously
+- `tickora_custom_request` - Make custom GET requests to any Tickora endpoint
 
-## Available Tools
+#### API Endpoints
+The server maps to these Tickora API endpoints:
+```javascript
+const ENDPOINTS = {
+  people: "/api/people",
+  companies: "/api/companies",
+  contacts: "/api/contacts",
+  leads: "/api/leads",
+  deals: "/api/deals",
+  tasks: "/api/tasks",
+  tickets: "/api/tickets",
+  notes: "/api/notes",
+  activities: "/api/activities",
+  users: "/api/users",
+  pipelines: "/api/pipelines",
+  tags: "/api/tags",
+};
+```
 
-- `tickora_login` — Authenticate with Tickora
-- `tickora_get_people` — Fetch all people
-- `tickora_get_companies` — Fetch all companies
-- `tickora_get_deals` — Fetch all deals
-- `tickora_get_tasks` — Fetch all tasks
-- `tickora_get_tickets` — Fetch all tickets
-- `tickora_get_leads` — Fetch all leads
-- `tickora_get_contacts` — Fetch all contacts
-- `tickora_get_notes` — Fetch all notes
-- `tickora_get_activities` — Fetch all activities
-- `tickora_fetch_all` — Fetch ALL endpoints at once
-- `tickora_custom_request` — Any custom endpoint
+### Usage with Claude Desktop
 
----
+1. Install dependencies: `npm install`
+2. Configure `.env` with credentials
+3. Update `claude_desktop_config.json` with your paths
+4. Copy config to Claude Desktop directory
+5. Restart Claude Desktop
 
-## Security
+## Web UI (`index.html` + `app.js`)
 
-- ✅ Credentials stored in `.env` only — never in code
-- ✅ Add `.env` to `.gitignore` — never commit it
-- ✅ Change your password if it was ever shared in a chat
+### Purpose
+Provides a browser-based chat interface where users can directly interact with Claude + Tickora data.
+
+### Frontend (`index.html`)
+
+#### Features
+- Modern, dark-themed UI with custom CSS
+- Real-time chat interface
+- Configuration sidebar for credentials
+- Tool call visualization
+- Typing indicators
+- Auto-resizing text input
+
+#### Key Functions
+- `connect()` - Validates credentials and establishes connection
+- `send()` - Sends user messages to Claude API with tool access
+- `callTickoraTool()` - Executes Tickora API calls from the browser
+- `addMessage()` - Renders chat messages
+- `showTyping()` / `removeTyping()` - Loading indicators
+
+#### Claude Integration
+- Uses Anthropic's Messages API
+- Implements tool calling loop for multi-step interactions
+- Maintains conversation history
+- Handles tool results and continues conversation
+
+### Backend (`app.js`)
+
+#### Purpose
+Simple Express server to handle authentication for the web UI.
+
+#### Endpoints
+- `POST /login` - Authenticates with Tickora and stores session cookie
+- `GET /people` - Fetches people data (example endpoint)
+
+**Note**: The current `app.js` is minimal and only implements basic login and one data endpoint. It may need expansion for full functionality.
+
+## API Reference
+
+### Tickora API Integration
+
+All tools support optional parameters:
+- `page` (number): Page number for pagination
+- `limit` (number): Results per page (default: 50)
+- `search` (string): Search/filter query
+
+### Authentication Flow
+
+1. Attempt JSON login to `/api/auth/login`
+2. Fallback to form-based login to `/login`
+3. Extract session cookie or Bearer token
+4. Include auth headers in subsequent requests
+
+### Error Handling
+
+- Automatic re-authentication on 401 responses
+- Graceful handling of API failures
+- Promise.allSettled for bulk operations in `tickora_fetch_all`
+
+## Security Considerations
+
+- Credentials stored only in `.env` (never in code)
+- `.env` should be added to `.gitignore`
+- Session management with proper cookie handling
+- No hardcoded secrets in source code
+
+## Development Notes
+
+### Running the Project
+
+#### Web UI
+1. Open `index.html` in browser
+2. Configure credentials in sidebar
+3. Click "Connect"
+4. Start chatting
+
+#### MCP Server
+1. `npm install`
+2. Configure `.env`
+3. `node mcp-server.js` (stdio mode for Claude Desktop)
+
+### Testing
+The project includes a basic test script placeholder in `package.json`:
+```json
+"scripts": {
+  "test": "echo \"Error: no test specified\" && exit 1"
+}
+```
+
+### Known Issues
+- `node app.js` exits with code 1 (likely missing error handling or incomplete implementation)
+- Web UI backend (`app.js`) is minimal and may need additional endpoints
+
+## Repository Information
+
+- **GitHub**: https://github.com/Sivakaami052001/tickora-mcp-project
+- **License**: ISC
+- **Main Entry**: `mcp-server.js`
+
+## Future Enhancements
+
+- Add more comprehensive error handling
+- Implement full CRUD operations (not just GET)
+- Add data caching for performance
+- Expand web UI backend with all Tickora endpoints
+- Add unit tests and integration tests
+- Implement rate limiting and request throttling
